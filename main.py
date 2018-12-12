@@ -1,4 +1,3 @@
-# main.py -- put your code here
 import pyb
 import lcd160cr
 from random import randint
@@ -9,14 +8,15 @@ lcd = lcd160cr.LCD160CR('X')
 SCREEN_WIDTH = 128
 SCREEN_HEIGHT = 160
 
-VERTICAL_POINT_1 = 50
-VERTICAL_POINT_2 = 112
+VERTICAL_POINT_1 = 53
+VERTICAL_POINT_2 = 106
 
 HORIZONTAL_POINT_1 = 42
-HORIZONTAL_POINT_2 = 86
+HORIZONTAL_POINT_2 = 84
 
 X_LENGTH = 10
-O_RADIUS = 10
+O_OFFSET = 5
+X_OFFSET = 5
 PADDING = 4
 
 X_WIN = ["X", "X", "X"]
@@ -49,8 +49,8 @@ def draw_board():
 
 
 def draw_piece(x_quad, y_quad):
-	x_coord_midpoint = int(HORIZONTAL_POINT_1 * x_quad  + HORIZONTAL_POINT_1 / 2)
-	y_coord_midpoint = int(VERTICAL_POINT_1 * y_quad  + VERTICAL_POINT_1 / 2)
+	x_coord_midpoint = int(HORIZONTAL_POINT_1 * x_quad)
+	y_coord_midpoint = int(VERTICAL_POINT_1 * y_quad)
 	print(x_coord_midpoint, y_coord_midpoint)
 	if x_turn:
 		draw_x(x_coord_midpoint, y_coord_midpoint)
@@ -58,40 +58,26 @@ def draw_piece(x_quad, y_quad):
 		draw_o(x_coord_midpoint, y_coord_midpoint)
 
 def draw_x(x_midpoint, y_midpoint):
-	lcd.set_pen(lcd.rgb(PINK[0], PINK[1], PINK[2]), lcd.rgb(BLACK[0], BLACK[1], BLACK[2]))
-	lcd.line(x_midpoint - X_LENGTH, y_midpoint - X_LENGTH, x_midpoint + X_LENGTH, y_midpoint + X_LENGTH)
-	lcd.line(x_midpoint + X_LENGTH, y_midpoint - X_LENGTH, x_midpoint - X_LENGTH, y_midpoint + X_LENGTH)
-
+	lcd.set_font(3, scale=2, trans=1)
+	lcd.set_text_color(lcd.rgb(PINK[0],PINK[1],PINK[2]), lcd.rgb(0,0,0))
+	lcd.set_pos(x_midpoint + X_OFFSET, y_midpoint + X_OFFSET)
+	lcd.write("x")
 
 def draw_o(x_midpoint, y_midpoint):
-	lcd.set_pen(lcd.rgb(BLUE[0], BLUE[1], BLUE[2]), lcd.rgb(BLACK[0], BLACK[1], BLACK[2]))
+	lcd.set_font(3, scale=2, trans=1)
+	lcd.set_text_color(lcd.rgb(BLUE[0],BLUE[1],BLUE[2]), lcd.rgb(0,0,0))
+	lcd.set_pos(x_midpoint + O_OFFSET, y_midpoint + O_OFFSET)
+	lcd.write("o")
 
-	lcd.line(x_midpoint - 2,            y_midpoint - O_RADIUS + 2, x_midpoint + 2,            y_midpoint - O_RADIUS + 2)
-	lcd.line(x_midpoint - 2,            y_midpoint + O_RADIUS - 2, x_midpoint + 2,            y_midpoint + O_RADIUS - 2)
-	lcd.line(x_midpoint - O_RADIUS + 2, y_midpoint - 2,            x_midpoint - O_RADIUS + 2, y_midpoint + 2)
-	lcd.line(x_midpoint + O_RADIUS - 2, y_midpoint - 2,            x_midpoint + O_RADIUS - 2, y_midpoint + 2)
-	
-	lcd.set_text_color(lcd.rgb(100,100,100), lcd.rgb(100,100,100))
-	lcd.line(x_midpoint - 1,            y_midpoint - O_RADIUS + 1, x_midpoint - O_RADIUS + 1, y_midpoint + 1)
-	lcd.line(x_midpoint + 1,            y_midpoint - O_RADIUS + 1, x_midpoint + O_RADIUS - 1, y_midpoint + 1)
-	lcd.line(x_midpoint + O_RADIUS - 1, y_midpoint + 1,            x_midpoint + 1,            y_midpoint + O_RADIUS - 1)
-	lcd.line(x_midpoint - O_RADIUS + 1, y_midpoint + 1,            x_midpoint - 1,            y_midpoint + O_RADIUS - 1)
-
-
-	lcd.set_pixel(int(x_midpoint + O_RADIUS/2), int(y_midpoint + O_RADIUS/2), lcd.rgb(BLUE[0], BLUE[1], BLUE[2]))
-	lcd.set_pixel(int(x_midpoint + O_RADIUS/2), int(y_midpoint - O_RADIUS/2), lcd.rgb(BLUE[0], BLUE[1], BLUE[2]))
-	lcd.set_pixel(int(x_midpoint - O_RADIUS/2), int(y_midpoint + O_RADIUS/2), lcd.rgb(BLUE[0], BLUE[1], BLUE[2]))
-	lcd.set_pixel(int(x_midpoint - O_RADIUS/2), int(y_midpoint - O_RADIUS/2), lcd.rgb(BLUE[0], BLUE[1], BLUE[2]))
-
-def announce_winner(winner):
+def announce_winner(winner, offset):
 	sleep(1)
 	lcd.erase()
 	lcd.set_font(0, scale=2)
 	lcd.set_text_color(lcd.rgb(GREEN[0],GREEN[1],GREEN[2]), lcd.rgb(0,0,0))
-	for x in range(0,20):
+	for x in range(0,offset):
 		lcd.erase()
 		lcd.set_pos(x, int(SCREEN_HEIGHT/2))
-		lcd.write(winner + " wins!")
+		lcd.write(winner)
 		sleep(0.05)
 	for i in range(4000):
 		x = randint(0, SCREEN_WIDTH)
@@ -134,6 +120,10 @@ def check_win():
 		return("X")
 	elif board[2] + board[4] + board[6] == O_WIN:
 		return("O")
+	#check tie
+	if not ["FREE"] in board:
+		print("tie")
+		return("TIE")
 
 def start():
 	draw_board()
@@ -211,10 +201,12 @@ def start():
 				winner = check_win()
 				if winner == "X":
 					print("x win")
-					announce_winner("X")
+					announce_winner("X Wins", 25)
 				elif winner == "O":
 					print("o win")
-					announce_winner("O")
+					announce_winner("O Wins", 25)
+				elif winner == "TIE":
+					announce_winner("It's a TIE", 10)
 		sleep(0.05)
 
 start()
