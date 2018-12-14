@@ -1,6 +1,6 @@
 import pyb
 import lcd160cr
-from random import randint
+from random import randint, choice
 from time import sleep
 lcd = lcd160cr.LCD160CR('X')
 
@@ -14,10 +14,9 @@ VERTICAL_POINT_2 = 106
 HORIZONTAL_POINT_1 = 42
 HORIZONTAL_POINT_2 = 84
 
-X_LENGTH = 10
-O_OFFSET = 5
-X_OFFSET = 5
 PADDING = 4
+X_OFFSET = 7 
+Y_OFFSET = 12
 
 X_WIN = ["X", "X", "X"]
 O_WIN = ["O", "O", "O"]
@@ -30,7 +29,7 @@ GREEN = (102, 255, 153)
 
 
 #variables
-x_turn = True
+x_turn = choice([True, False])
 
 board = [["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"]]
 sw = pyb.Switch()
@@ -38,7 +37,17 @@ sw = pyb.Switch()
 def draw_board():
 	global x_turn
 	global board
-	x_turn = True
+	x_turn = choice([True, False])
+
+	lcd.erase()
+	lcd.set_text_color(lcd.rgb(GRAY[0],GRAY[1],GRAY[2]), lcd.rgb(0,0,0))
+	lcd.set_font(2, scale=0)
+	lcd.set_pos(20, 50)
+	if x_turn: 
+		lcd.write("X goes first")
+	else:
+		lcd.write("O goes first")
+	sleep(1)
 	board = [["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"]]
 	lcd.erase()
 	lcd.set_pen(lcd.rgb(GRAY[0], GRAY[1], GRAY[2]), lcd.rgb(BLACK[0], BLACK[1], BLACK[2]))
@@ -49,47 +58,51 @@ def draw_board():
 
 
 def draw_piece(x_quad, y_quad):
-	x_coord_midpoint = int(HORIZONTAL_POINT_1 * x_quad)
-	y_coord_midpoint = int(VERTICAL_POINT_1 * y_quad)
-	print(x_coord_midpoint, y_coord_midpoint)
+	x = int(HORIZONTAL_POINT_1 * x_quad)
+	y = int(VERTICAL_POINT_1 * y_quad)
 	if x_turn:
-		draw_x(x_coord_midpoint, y_coord_midpoint)
+		draw_x(x, y)
 	else:
-		draw_o(x_coord_midpoint, y_coord_midpoint)
+		draw_o(x, y)
 
-def draw_x(x_midpoint, y_midpoint):
-	lcd.set_font(3, scale=2, trans=1)
+def draw_x(x, y):
+	lcd.set_font(2, scale=2, bold=1, trans=1)
 	lcd.set_text_color(lcd.rgb(PINK[0],PINK[1],PINK[2]), lcd.rgb(0,0,0))
-	lcd.set_pos(x_midpoint + X_OFFSET, y_midpoint + X_OFFSET)
-	lcd.write("x")
+	lcd.set_pos(x + X_OFFSET, y + Y_OFFSET)
+	lcd.write("X")
 
-def draw_o(x_midpoint, y_midpoint):
-	lcd.set_font(3, scale=2, trans=1)
+def draw_o(x, y):
+	lcd.set_font(2, scale=2,bold=1, trans=1)
 	lcd.set_text_color(lcd.rgb(BLUE[0],BLUE[1],BLUE[2]), lcd.rgb(0,0,0))
-	lcd.set_pos(x_midpoint + O_OFFSET, y_midpoint + O_OFFSET)
-	lcd.write("o")
+	lcd.set_pos(x + X_OFFSET, y + Y_OFFSET)
+	lcd.write("O")
 
 def announce_winner(winner, offset):
 	sleep(1)
 	lcd.erase()
-	lcd.set_font(0, scale=2)
+	if "TIE" in winner:
+		lcd.set_font(2, scale=0, scroll=1)
+	else:
+		lcd.set_font(2, scale=1, scroll=1)
+	
 	lcd.set_text_color(lcd.rgb(GREEN[0],GREEN[1],GREEN[2]), lcd.rgb(0,0,0))
 	for x in range(0,offset):
 		lcd.erase()
 		lcd.set_pos(x, int(SCREEN_HEIGHT/2))
 		lcd.write(winner)
 		sleep(0.05)
-	for i in range(4000):
+	for i in range(5000):
 		x = randint(0, SCREEN_WIDTH)
 		y = randint(0, SCREEN_HEIGHT)
 		r = randint(0, 255)
 		g = randint(0, 255)
 		b  = randint(0, 255)
 		lcd.set_pixel(x, y, lcd.rgb(r,g,b))
-		sleep(0.001)
+		sleep(0.0005)
 	lcd.erase()
 	lcd.set_pos(10, 50)
-	lcd.set_font(0, scale=1)
+	lcd.set_font(2, scale=0, scroll=0)
+	#lcd.set_font(0, scale=1)
 	lcd.write("Press USR")
 	lcd.set_pos(10, 70)
 	lcd.write("to play again")
@@ -206,7 +219,7 @@ def start():
 					print("o win")
 					announce_winner("O Wins", 25)
 				elif winner == "TIE":
-					announce_winner("It's a TIE", 10)
+					announce_winner("It's a TIE", 7)
 		sleep(0.05)
 
 start()
