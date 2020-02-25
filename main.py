@@ -21,11 +21,11 @@ Y_OFFSET = 12
 X_WIN = ["X", "X", "X"]
 O_WIN = ["O", "O", "O"]
 
-PINK  = (255, 204, 255)
-BLUE  = (153, 153, 255)
-GRAY  = (242, 242, 242)
-BLACK = (0, 0, 0)
-GREEN = (102, 255, 153)
+PINK  = lcd.rgb(255, 204, 255)
+BLUE  = lcd.rgb(153, 153, 255)
+GRAY  = lcd.rgb(242, 242, 242)
+BLACK = lcd.rgb(0, 0, 0)
+GREEN = lcd.rgb(102, 255, 153)
 
 
 #variables
@@ -40,7 +40,7 @@ def draw_board():
 	x_turn = choice([True, False])
 
 	lcd.erase()
-	lcd.set_text_color(lcd.rgb(GRAY[0],GRAY[1],GRAY[2]), lcd.rgb(0,0,0))
+	lcd.set_text_color(GRAY, BLACK)
 	lcd.set_font(2, scale=0)
 	lcd.set_pos(20, 50)
 	if x_turn: 
@@ -50,7 +50,7 @@ def draw_board():
 	sleep(1)
 	board = [["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"],["FREE"]]
 	lcd.erase()
-	lcd.set_pen(lcd.rgb(GRAY[0], GRAY[1], GRAY[2]), lcd.rgb(BLACK[0], BLACK[1], BLACK[2]))
+	lcd.set_pen(GRAY, BLACK)
 	lcd.line(0,VERTICAL_POINT_1,SCREEN_WIDTH,VERTICAL_POINT_1)
 	lcd.line(0,VERTICAL_POINT_2,SCREEN_WIDTH,VERTICAL_POINT_2)
 	lcd.line(HORIZONTAL_POINT_1,0,HORIZONTAL_POINT_1,SCREEN_HEIGHT)
@@ -67,13 +67,13 @@ def draw_piece(x_quad, y_quad):
 
 def draw_x(x, y):
 	lcd.set_font(2, scale=2, bold=1, trans=1)
-	lcd.set_text_color(lcd.rgb(PINK[0],PINK[1],PINK[2]), lcd.rgb(0,0,0))
+	lcd.set_text_color(PINK, BLACK)
 	lcd.set_pos(x + X_OFFSET, y + Y_OFFSET)
 	lcd.write("X")
 
 def draw_o(x, y):
 	lcd.set_font(2, scale=2,bold=1, trans=1)
-	lcd.set_text_color(lcd.rgb(BLUE[0],BLUE[1],BLUE[2]), lcd.rgb(0,0,0))
+	lcd.set_text_color(BLUE, BLACK)
 	lcd.set_pos(x + X_OFFSET, y + Y_OFFSET)
 	lcd.write("O")
 
@@ -85,7 +85,7 @@ def announce_winner(winner, offset):
 	else:
 		lcd.set_font(2, scale=1, scroll=1)
 	
-	lcd.set_text_color(lcd.rgb(GREEN[0],GREEN[1],GREEN[2]), lcd.rgb(0,0,0))
+	lcd.set_text_color(GREEN, BLACK)
 	for x in range(0,offset):
 		lcd.erase()
 		lcd.set_pos(x, int(SCREEN_HEIGHT/2))
@@ -102,7 +102,6 @@ def announce_winner(winner, offset):
 	lcd.erase()
 	lcd.set_pos(10, 50)
 	lcd.set_font(2, scale=0, scroll=0)
-	#lcd.set_font(0, scale=1)
 	lcd.write("Press USR")
 	lcd.set_pos(10, 70)
 	lcd.write("to play again")
@@ -112,17 +111,13 @@ def check_win():
 	# check horizontal
 	for i in range(3):
 		if board[i*3+0] + board[i*3+1] + board[i*3+2] == X_WIN:
-			print("horiz win for x with i=", i)
 			return("X")
 		elif board[i*3+0] + board[i*3+1] + board[i*3+2] == O_WIN:
-			print("horizontal win for o with i=", i)
 			return("O")
 		#check vertical
 		elif board[i+0] + board[i+3] + board[i+6] == X_WIN:
-			print("vertical win for x with i=", i)
 			return("X")
 		elif board[i+0] + board[i+3] + board[i+6] == O_WIN:
-			print("vertical win for o with i=", i)
 			return("O")
        #check horizontal
 	if board[0] + board[4] + board[8] == X_WIN:
@@ -135,7 +130,6 @@ def check_win():
 		return("O")
 	#check tie
 	if not ["FREE"] in board:
-		print("tie")
 		return("TIE")
 
 def start():
@@ -148,19 +142,15 @@ def start():
 	 		valid_square_selected = False
 	 		global board
 	 		global x_turn
-	 		#coords = lcd.get_touch()
 	 		x = coords[1]
 	 	   	y = coords[2]
-	 	   	print(coords)
 	 		if x < HORIZONTAL_POINT_1:
 				if y < VERTICAL_POINT_1 - PADDING:
-					print("box 1")
 					if board[0] == ["FREE"]:
 						board[0] = ["X"] if x_turn else ["O"]
 						draw_piece(0,0)
 						valid_square_selected = True
 				elif y > VERTICAL_POINT_1 + PADDING and y < VERTICAL_POINT_2 - PADDING:
-					print("box 4")
 					if board[3] == ["FREE"]:
 						board[3] = ["X"] if x_turn else ["O"]
 						draw_piece(0,1)
@@ -168,43 +158,36 @@ def start():
 				elif y > VERTICAL_POINT_2 + PADDING:
 					if board[6] == ["FREE"]:
 						board[6] = ["X"] if x_turn else ["O"]
-						print("box 7")
 						draw_piece(0,2)
 						valid_square_selected = True
 			elif x > HORIZONTAL_POINT_1 + PADDING and x < HORIZONTAL_POINT_2 - PADDING:
 				if y < VERTICAL_POINT_1 - PADDING:
-					print("box 2")
 					if board[1] == ["FREE"]:
 						board[1] = ["X"] if x_turn else ["O"]
 						draw_piece(1,0)
 						valid_square_selected = True
 				elif y > VERTICAL_POINT_1 + PADDING and y < VERTICAL_POINT_2 - PADDING:
-					print("box 5")
 					if board[4] == ["FREE"]:
 						board[4] = ["X"] if x_turn else ["O"]
 						draw_piece(1,1)
 						valid_square_selected = True
 				elif y > VERTICAL_POINT_2 + PADDING:
-					print("box 8")
 					if board[7] == ["FREE"]:
 						board[7] = ["X"] if x_turn else ["O"]
 						draw_piece(1,2)
 						valid_square_selected = True
 			elif x > HORIZONTAL_POINT_2 + PADDING:
 				if y < VERTICAL_POINT_1 - PADDING:
-					print("box 3")
 					if board[2] == ["FREE"]:
 						board[2] = ["X"] if x_turn else ["O"]
 						draw_piece(2,0)
 						valid_square_selected = True
 				elif y > VERTICAL_POINT_1 + PADDING and y < VERTICAL_POINT_2 - PADDING:
-					print("box 6")
 					if board[5] == ["FREE"]:
 						board[5] = ["X"] if x_turn else ["O"]
 						draw_piece(2,1)
 						valid_square_selected = True
 				elif y > VERTICAL_POINT_2 + PADDING:
-					print("box 9")
 					if board[8] == ["FREE"]:
 						board[8] = ["X"] if x_turn else ["O"]
 						draw_piece(2,2)
@@ -213,10 +196,8 @@ def start():
 				x_turn = not x_turn
 				winner = check_win()
 				if winner == "X":
-					print("x win")
 					announce_winner("X Wins", 25)
 				elif winner == "O":
-					print("o win")
 					announce_winner("O Wins", 25)
 				elif winner == "TIE":
 					announce_winner("It's a TIE", 7)
